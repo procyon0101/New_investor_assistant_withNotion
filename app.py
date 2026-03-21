@@ -99,3 +99,6 @@ if gemini_key and notion_token and database_id:
         st.warning("'주식전략'으로 태깅된 페이지를 찾지 못했습니다. 노션 속성 설정을 확인해주세요.")
 else:
     st.info("👈 왼쪽 사이드바에 API 키와 Database ID를 입력하면 비서가 활성화됩니다.")
+
+
+
