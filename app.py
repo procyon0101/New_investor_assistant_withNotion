@@ -48,7 +48,7 @@ def get_notion_data(db_id, token):
 # --- 메인 로직 ---
 if gemini_key and notion_token and database_id:
     genai.configure(api_key=gemini_key)
-    model = genai.GenerativeModel('gemini-1.5-pro')
+    model = genai.GenerativeModel('models/gemini-1.5-pro')
 
     # 채팅 기록 표시
     for msg in st.session_state.messages:
@@ -60,16 +60,20 @@ if gemini_key and notion_token and database_id:
 
         with st.chat_message("assistant"):
             with st.spinner("노션 데이터를 분석하며 비판적 검토 중..."):
-                # 1. 노션에서 실시간으로 데이터 읽어오기
                 context_data = get_notion_data(database_id, notion_token)
-                
-                # 2. 시스템 프롬프트와 데이터를 결합하여 질문
+    
+    # 💡 데이터가 없을 경우에 대한 방어 로직 추가
+                if not context_data or "실패" in context_data:
+                    st.warning("⚠️ 노션에서 '주식전략'으로 태깅된 데이터를 가져오지 못했습니다. 일반적인 지식으로 대답합니다.")
+                    context_data = "등록된 투자 원칙 데이터가 없습니다."
+
                 system_instruction = (
-                    f"너는 비판적 투자 파트너다. 아래의 노션 데이터(나의 투자 서적 요약)를 바탕으로 대답하라.\n"
+                    f"너는 비판적 투자 파트너다. 아래의 데이터를 바탕으로 대답하라.\n"
                     f"데이터: {context_data}\n\n"
                     "지침: 상충되는 원칙이 있으면 쟁점화하고, 내 논리의 맹점을 지적하라."
                 )
-                
+    
+    # ... 나머지 코드 동일     
                 response = model.generate_content([system_instruction, prompt])
                 st.markdown(response.text)
                 st.session_state.messages.append({"role": "assistant", "content": response.text})
